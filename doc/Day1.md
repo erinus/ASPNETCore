@@ -1,4 +1,4 @@
-# 一、學習操作容器
+# 學習操作容器
 ## Docker 安裝
 1. Windows 10
    - Docker Desktop for Windows (use WSL2)
@@ -137,7 +137,7 @@ Deleted: sha256:114ca5b7280f3b49e94a67659890aadde83d58a8bde0d9020b2bc8c902c3b9de
 ``` shell
 > docker rm <container-id>
 ```
-# 二、建立開發環境
+# 建立開發環境
 ## 檢查作業系統
 1. Windows 10 Professional
 2. ~~Ubuntu Desktop 18.04~~
@@ -231,8 +231,8 @@ info: Microsoft.Hosting.Lifetime[0]
    - 執行 View > Run (Ctrl + Shift + D)，選擇 `Docker .NET Core Launch`
    - 執行 Run > Start Debugging (F5)
    - 右下角提示 `The ASP.NET Core HTTPS development certificate is not trusted. To trust the certificate, run "dotnet dev-certs https --trust", or click "Trust" below.`，選擇 `Trust`，並同意安裝憑證
-## ASP.NET Core
-### 指令操作
+# ASP.NET Core
+## 指令操作
 1. 查詢指令
    ``` shell
    > dotnet -h
@@ -470,8 +470,8 @@ info: Microsoft.Hosting.Lifetime[0]
      app -> /app/bin/Release/netcoreapp3.1/app.dll
      app -> /app/bin/Release/netcoreapp3.1/publish/
    ```
-### 基礎架構
-#### `Program.cs`
+## 基礎架構
+### `Program.cs`
 ``` csharp
 public class Program
 {
@@ -534,7 +534,7 @@ public class Program
    指定要監聽的 host 和 port
 5. UseWebRoot
    指定本應用根目錄 WebRoot
-#### `Startup.cs`
+### `Startup.cs`
 ``` csharp
 public class Startup
 {
@@ -590,8 +590,8 @@ public class Startup
    加入認證機制，判定身份
 6. UseAuthorization（3.0 新增）  
    加入授權機制，判定使用行為權限
-### 建立 API
-#### `Models\Stock.cs`
+## 建立 API
+### `Models\Stock.cs`
 ``` csharp
 using System;
 
@@ -619,7 +619,7 @@ namespace app.Models
     }
 }
 ```
-#### `Controllers\StockController.cs`
+### `Controllers\StockController.cs`
 ``` csharp
 using System;
 using System.Collections.Generic;
@@ -646,7 +646,6 @@ namespace app.Controllers
         [HttpGet]
         public Stock Get()
         {
-            var rng = new Random();
             return new Stock
             {
                 Date = DateTime.Now.Date,
@@ -670,4 +669,76 @@ namespace app.Controllers
     "low":489.1,
     "close":490.1
 }
+```
+## 使用 Docker Compose 建立服務開發環境
+在 `env` 目錄下建立 `docker-compose.yml` 檔案
+### 開發測試
+### `env\docker-compose.yml`
+``` yaml
+version: "3"
+
+services:
+
+  netcore:
+    container_name: dev-netcore
+    image: mcr.microsoft.com/dotnet/sdk:3.1
+    restart: always
+    volumes:
+      - ./../src:/app
+    ports:
+      - 5000:5000
+      - 5001:5001
+    depends_on:
+      - mariadb
+    working_dir: /app
+    command: dotnet watch run --urls="http://+:5000;https://+:5001"
+
+  mariadb:
+    container_name: dev-mariadb
+    restart: always
+    image: mariadb:10.5.8
+    volumes:
+      - ./../sql:/docker-entrypoint-initdb.d
+    ports:
+      - 6000:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+```
+``` shell
+> docker-compose up
+```
+### 上線部署
+### `env\docker-compose.yml`
+``` yaml
+version: "3"
+
+services:
+
+  netcore:
+    container_name: dev-netcore
+    image: mcr.microsoft.com/dotnet/sdk:3.1
+    restart: always
+    volumes:
+      - ./../src/bin/Release/netcoreapp3.1/publish:/app
+    ports:
+      - 5000:5000
+      - 5001:5001
+    depends_on:
+      - mariadb
+    working_dir: /app
+    command: ./app --urls="http://+:5000;https://+:5001"
+
+  mariadb:
+    container_name: dev-mariadb
+    restart: always
+    image: mariadb:10.5.8
+    volumes:
+      - ./../sql:/docker-entrypoint-initdb.d
+    ports:
+      - 6000:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+```
+``` shell
+> docker-compose up -d
 ```
