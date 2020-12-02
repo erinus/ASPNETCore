@@ -43,17 +43,17 @@
 ### `appsettings.json`
 ``` json
 {
-  "Logging": {
-    "LogLevel": {
-      "Default": "Information",
-      "Microsoft": "Warning",
-      "Microsoft.Hosting.Lifetime": "Information"
+    "Logging": {
+        "LogLevel": {
+            "Default": "Information",
+            "Microsoft": "Warning",
+            "Microsoft.Hosting.Lifetime": "Information"
+        }
+    },
+    "AllowedHosts": "*",
+    "ConnectionStrings": {
+        "StockConnection": "server=mariadb;database=stock;user=root;password=root"
     }
-  },
-  "AllowedHosts": "*",
-  "ConnectionStrings": {
-    "StockConnection": "server=mariadb;database=stock;user=root;password=root"
-  }
 }
 ```
 > 在 Docker Compose 建立出來的服務群中，會自動把 Service Name 關聯容器的 Private IP
@@ -231,7 +231,7 @@ namespace app.Controllers
         public IEnumerable<Stock> Get()
         {
             return _stockContext.Stocks
-                .Where(stock => stock.Open > 491);
+                .Where(s => s.Open > 491);
         }
     }
 }
@@ -251,4 +251,467 @@ namespace app.Controllers
 ]
 ```
 > 複雜的查詢操作，請參考 [Complex Query Operator](https://docs.microsoft.com/zh-tw/ef/core/querying/complex-query-operators)
-## 寫入資料
+## 新增資料
+### `Controllers\StockController.cs`
+``` csharp
+namespace app.Controllers
+{
+    using app.Models;
+
+    [ApiController]
+    [Route("[controller]")]
+    public class StockController : ControllerBase
+    {
+        ...
+
+        [HttpPost]
+        public IEnumerable<Stock> Post()
+        {
+            Stock stock = new Stock
+            {
+                Code = "2330",
+                Time = DateTime.Parse("2020-12-02 12:02:00"),
+                Open = 492,
+                High = 497,
+                Low = 491,
+                Close = 494
+            };
+            _stockContext.Add(stock);
+            _stockContext.SaveChanges();
+            return _stockContext.Stocks;
+        }
+    }
+}
+```
+開啟 Postman 新增請求  
+POST https://localhost:5001/Stock  
+執行請求後取得 JSON 回應如下
+``` json
+[
+    {
+        "id": 1,
+        "time": "2020-12-02T12:00:00Z",
+        "code": "2330",
+        "open": 490,
+        "high": 495,
+        "low": 489,
+        "close": 492
+    },
+    {
+        "id": 2,
+        "time": "2020-12-02T12:01:00Z",
+        "code": "2330",
+        "open": 492,
+        "high": 495,
+        "low": 489,
+        "close": 492
+    },
+    {
+        "id": 3,
+        "time": "2020-12-02T12:02:00",
+        "code": "2330",
+        "open": 492,
+        "high": 497,
+        "low": 491,
+        "close": 494
+    }
+]
+```
+## 透過 JSON 請求新增資料
+### `Controllers\StockController.cs`
+``` csharp
+namespace app.Controllers
+{
+    using app.Models;
+
+    [ApiController]
+    [Route("[controller]")]
+    public class StockController : ControllerBase
+    {
+        ...
+
+        [HttpPost]
+        public IEnumerable<Stock> Post(Stock body)
+        {
+            _stockContext.Add(body);
+            _stockContext.SaveChanges();
+            return _stockContext.Stocks;
+        }
+    }
+}
+```
+開啟 Postman 新增請求  
+POST https://localhost:5001/Stock  
+Body
+``` json
+{
+    "time": "2020-12-03T12:03:00",
+    "code": "2330",
+    "open": 492,
+    "high": 492,
+    "low": 488,
+    "close": 491
+}
+```
+執行請求後取得 JSON 回應如下
+``` json
+[
+    {
+        "id": 1,
+        "time": "2020-12-02T12:00:00Z",
+        "code": "2330",
+        "open": 490,
+        "high": 495,
+        "low": 489,
+        "close": 492
+    },
+    {
+        "id": 2,
+        "time": "2020-12-02T12:01:00Z",
+        "code": "2330",
+        "open": 492,
+        "high": 495,
+        "low": 489,
+        "close": 492
+    },
+    {
+        "id": 3,
+        "time": "2020-12-02T12:02:00",
+        "code": "2330",
+        "open": 492,
+        "high": 497,
+        "low": 491,
+        "close": 494
+    },
+    {
+        "id": 4,
+        "time": "2020-12-03T12:03:00",
+        "code": "2330",
+        "open": 492,
+        "high": 492,
+        "low": 488,
+        "close": 491
+    }
+]
+```
+## 透過 JSON 請求修改整筆資料
+### `Controllers\StockController.cs`
+``` csharp
+namespace app.Controllers
+{
+    using app.Models;
+
+    [ApiController]
+    [Route("[controller]")]
+    public class StockController : ControllerBase
+    {
+        ...
+
+        [HttpPatch]
+        public IEnumerable<Stock> Patch(Stock body)
+        {
+            _stockContext.Update(body);
+            _stockContext.SaveChanges();
+            return _stockContext.Stocks;
+        }
+    }
+}
+```
+開啟 Postman 新增請求  
+PATCH https://localhost:5001/Stock  
+Body
+``` json
+{
+    "id": 4,
+    "time": "2020-12-03T12:03:00",
+    "code": "2330",
+    "open": 492,
+    "high": 492,
+    "low": 488,
+    "close": 489
+}
+```
+執行請求後取得 JSON 回應如下
+``` json
+[
+    {
+        "id": 1,
+        "time": "2020-12-02T12:00:00Z",
+        "code": "2330",
+        "open": 490,
+        "high": 495,
+        "low": 489,
+        "close": 492
+    },
+    {
+        "id": 2,
+        "time": "2020-12-02T12:01:00Z",
+        "code": "2330",
+        "open": 492,
+        "high": 495,
+        "low": 489,
+        "close": 492
+    },
+    {
+        "id": 3,
+        "time": "2020-12-02T12:02:00Z",
+        "code": "2330",
+        "open": 492,
+        "high": 497,
+        "low": 491,
+        "close": 494
+    },
+    {
+        "id": 4,
+        "time": "2020-12-03T12:03:00",
+        "code": "2330",
+        "open": 492,
+        "high": 492,
+        "low": 488,
+        "close": 489
+    }
+]
+```
+## 透過 JSON 請求修改部分資料
+### `Models\Stock.cs`
+``` csharp
+using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace app.Models
+{
+    public class Stock
+    {
+        [Key]
+        public int Id { get; set; }
+
+        // 日期
+        public DateTime? Time { get; set; }
+
+        // 股票代碼
+        public string Code { get; set; }
+
+        // 開盤價
+        public Double? Open { get; set; }
+
+        // 最高價
+        public Double? High { get; set; }
+
+        // 最低價
+        public Double? Low { get; set; }
+
+        // 收盤價
+        public Double? Close { get; set; }
+    }
+}
+```
+### `Models\StockExtensions.cs`
+``` csharp
+using System;
+
+namespace app.Models
+{
+    public static class StockExtensions
+    {
+        public static void Merge(this Stock instanceA, Stock instanceB)
+        {
+            if (instanceA != null && instanceB != null)
+            {
+                if(instanceB.Code != null)
+                {
+                    instanceA.Code = instanceB.Code;
+                }
+
+                if(instanceB.Time != null)
+                {
+                    instanceA.Time = instanceB.Time;
+                }
+
+                if(instanceB.Open != null)
+                {
+                    instanceA.Open = instanceB.Open;
+                }
+
+                if(instanceB.High != null)
+                {
+                    instanceA.High = instanceB.High;
+                }
+
+                if(instanceB.Low != null)
+                {
+                    instanceA.Low = instanceB.Low;
+                }
+
+                if(instanceB.Close != null)
+                {
+                    instanceA.Close = instanceB.Close;
+                }
+            }
+        }
+    }
+}
+```
+### `Controllers\StockController.cs`
+``` csharp
+namespace app.Controllers
+{
+    using app.Models;
+
+    [ApiController]
+    [Route("[controller]")]
+    public class StockController : ControllerBase
+    {
+        ...
+
+        [HttpPatch]
+        public IEnumerable<Stock> Patch(Stock body)
+        {
+            Stock stock = _stockContext.Stocks.FirstOrDefault(s => s.Id == body.Id);
+            stock.Merge(body);
+            _stockContext.Update(stock);
+            _stockContext.SaveChanges();
+            return _stockContext.Stocks;
+        }
+    }
+}
+```
+開啟 Postman 新增請求  
+PATCH https://localhost:5001/Stock  
+Body
+``` json
+{
+    "id": 4,
+    "close": 491
+}
+```
+執行請求後取得 JSON 回應如下
+``` json
+[
+    {
+        "id": 1,
+        "time": "2020-12-02T12:00:00Z",
+        "code": "2330",
+        "open": 490,
+        "high": 495,
+        "low": 489,
+        "close": 492
+    },
+    {
+        "id": 2,
+        "time": "2020-12-02T12:01:00Z",
+        "code": "2330",
+        "open": 492,
+        "high": 495,
+        "low": 489,
+        "close": 492
+    },
+    {
+        "id": 3,
+        "time": "2020-12-02T12:02:00Z",
+        "code": "2330",
+        "open": 492,
+        "high": 497,
+        "low": 491,
+        "close": 494
+    },
+    {
+        "id": 4,
+        "time": "2020-12-03T12:03:00",
+        "code": "2330",
+        "open": 492,
+        "high": 492,
+        "low": 488,
+        "close": 491
+    }
+]
+```
+## 刪除資料
+### `Controllers\StockController.cs`
+``` csharp
+namespace app.Controllers
+{
+    using app.Models;
+
+    [ApiController]
+    [Route("[controller]")]
+    public class StockController : ControllerBase
+    {
+        ...
+
+        [HttpPatch]
+        public IEnumerable<Stock> Patch(Stock body)
+        {
+            _stockContext.Update(body);
+            _stockContext.SaveChanges();
+            return _stockContext.Stocks;
+        }
+    }
+}
+```
+開啟 Postman 新增請求  
+DELETE https://localhost:5001/Stock  
+Body
+``` json
+{
+    "id": 4
+}
+```
+執行請求後取得 JSON 回應如下
+``` json
+[
+    {
+        "id": 1,
+        "time": "2020-12-02T12:00:00Z",
+        "code": "2330",
+        "open": 490,
+        "high": 495,
+        "low": 489,
+        "close": 492
+    },
+    {
+        "id": 2,
+        "time": "2020-12-02T12:01:00Z",
+        "code": "2330",
+        "open": 492,
+        "high": 495,
+        "low": 489,
+        "close": 492
+    },
+    {
+        "id": 3,
+        "time": "2020-12-02T12:02:00Z",
+        "code": "2330",
+        "open": 492,
+        "high": 497,
+        "low": 491,
+        "close": 494
+    }
+]
+```
+# LINE Bot
+## 安裝 ngrok
+1. 至 ngrok 官網 [Download](https://ngrok.com/download) 頁面下載 Windows 版本，並解壓縮出 ngrok.exe
+2. 至 ngrok 官網 [Signup](https://dashboard.ngrok.com/signup) 頁面註冊帳號
+3. 註冊完成後，在官網 [Setup & Installation](https://dashboard.ngrok.com/get-started/setup) 頁面的 `Connect your account` 區塊可以取得驗證權杖
+4. 複製指令在本機執行，會產出設定檔  
+   ``` shell
+   > ./ngrok authtoken <token>
+
+   Authtoken saved to configuration file: C:\Users\<username>/.ngrok2/ngrok.yml
+   ```
+5. 執行
+   ``` shell
+   > ./ngrok http 5001
+   ```
+## 申請建立 LINE Bot
+1. 至 [LINE Developers](https://developers.line.biz/) 登入
+2. 在 Providers 頁面 新增 Provider
+3. 進入 Provider 頁面後，選取 Create a Messaging API channel
+4. 建立頻道
+   - 在 `Channel name` 欄位輸入 `Stock`
+   - 在 `Channel description` 欄位輸入 `Stock`
+   - 在 `Category` 欄位選取 `銀行、保險、金融`
+   - 在 `Subcategory` 欄位選取 `銀行、保險、金融（其他）`
+   - 勾選 `I have read and agree to the LINE Official Account Terms of Use`
+   - 勾選 `I have read and agree to the LINE Official Account API Terms of Use`
+   - 點擊 `Create`
