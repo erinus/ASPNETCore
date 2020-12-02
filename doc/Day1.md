@@ -2,6 +2,8 @@
 ## Docker 安裝
 1. Windows 10
    - Docker Desktop for Windows (use WSL2)
+     - Windows Hypervisor Platform
+     - Windows Subsystem for Linux
    - ~~Docker Desktop for Windows (use Hyper-V)~~
 2. ~~Linux~~
 3. ~~Mac~~
@@ -16,7 +18,8 @@
 ### 從 DockerHub 找尋官方發佈 Image
 1. 開啟 DockerHub 官網，搜尋 .NET SDK
 2. 找到 .NET SDK
-3. 尋找 Tags 取得可用的 Image 版本
+3. 尋找 Tags 取得可用的 Image 版本  
+   建議只用 `VERIFIED PUBLISHER` 或 `OFFICIAL IMAGE`
 4. 從 DockerHub 下載 Image
 ``` shell
 > docker pull <repository>:<tag>
@@ -84,14 +87,16 @@ Deleted: sha256:114ca5b7280f3b49e94a67659890aadde83d58a8bde0d9020b2bc8c902c3b9de
    - -e \<key\> = \<value\>  
      指定環境變數
    - -p \<host-port\>:\<container-port\>  
-     指定埠號對應
-   - -v \<host-path\>:\<container-path\>  
+     指定埠號對應  
+     容器內埠號映射至本機埠號
+   - -v \<host-path\>:\<container-path\>   
+     指定目錄對應  
      掛載本機目錄至容器
    - -w  
      指定容器預設工作目錄
    - --name \<name\>  
      指定容器名稱
-   - <command>  
+   - \<command\>  
      容器運行後執行的命令
 2. 執行方式
    - 有使用 --rm  
@@ -109,7 +114,7 @@ Deleted: sha256:114ca5b7280f3b49e94a67659890aadde83d58a8bde0d9020b2bc8c902c3b9de
 
      ❯ docker ps
      CONTAINER ID        IMAGE                              COMMAND                  CREATED             STATUS              PORTS                                              NAMES
-     47d8ccd08403        mcr.microsoft.com/dotnet/sdk:3.1   "tail -f /dev/null"      8 seconds ago       Up 7 seconds                                                           trusting_rhodes
+     47d8ccd08403        mcr.microsoft.com/dotnet/sdk:3.1   "tail -f /dev/null"      8 seconds ago       Up 7 seconds                                                           xxxxx_yyyyy
      ```
 ### 透過已運行的 Container 執行指令
 ``` shell
@@ -126,11 +131,11 @@ Deleted: sha256:114ca5b7280f3b49e94a67659890aadde83d58a8bde0d9020b2bc8c902c3b9de
 ```
 ### 停止 Container
 ``` shell
-> docker rm <container-id>
+> docker stop <container-id>
 ```
 ### 移除 Container
 ``` shell
-> docker stop <container-id>
+> docker rm <container-id>
 ```
 # 二、建立開發環境
 ## 檢查作業系統
@@ -138,16 +143,19 @@ Deleted: sha256:114ca5b7280f3b49e94a67659890aadde83d58a8bde0d9020b2bc8c902c3b9de
 2. ~~Ubuntu Desktop 18.04~~
 3. ~~Mac OS X~~
 ## 安裝開發軟體
-1. Visual Studio Code
+1. 安裝 [.NET Core SDK 3.1](https://dotnet.microsoft.com/download/dotnet-core/3.1)
+2. Visual Studio Code
    - C# Extension
    - Docker Extension
-2. WSL2
-3. Windows Terminal
+3. WSL2
+4. Windows Terminal
    - oh-my-posh
-   - gsudo
-4. Git
-5. HeidiSQL
-6. Docker Desktop for Windows
+     提供 Powershell 樣式
+   - gsudo  
+     提供 Windows Terminal 可用系統管理員身份執行
+5. Git
+6. HeidiSQL
+7. Docker Desktop for Windows
    - Enable WSL2 Integration
      Settings > Resources > WSL Integration
 ## 準備容器影像
