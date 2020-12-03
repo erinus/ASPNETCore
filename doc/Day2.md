@@ -556,6 +556,7 @@ namespace app.Models
     }
 }
 ```
+`實務上開發會用 TypeMerger 或 AutoMapper 這類套件取代上面的複雜處理`
 ### `Controllers\StockController.cs`
 ``` csharp
 namespace app.Controllers
