@@ -16,7 +16,7 @@
 1. DB First
    開發時優先設計資料庫和資料表，程式則依照資料庫架構進行對應的設計資料實體，並藉由其存取資料庫
 2. Code First
-   開發時以程式需求為出發點，資料庫和資料表的規劃、建立和管理，都透過 Entity Framework 將程式中設定要儲存於資料庫的資料實體進行對應的轉換
+   開發時以程式需求為出發點，資料庫和資料表的規劃、建立和管理，都透過 Entity Framework 將程式中設定要儲存於資料庫的資料實體進行對應的轉換  
    ![Code First Approach](https://www.entityframeworktutorial.net/images/EF5/code-first.png)
 ## 資料庫設定
 1. 建立 stock 資料庫
@@ -643,10 +643,10 @@ namespace app.Controllers
     {
         ...
 
-        [HttpPatch]
-        public IEnumerable<Stock> Patch(Stock body)
+        [HttpDelete]
+        public IEnumerable<Stock> Delete(Stock body)
         {
-            _stockContext.Update(body);
+            _stockContext.Remove(body);
             _stockContext.SaveChanges();
             return _stockContext.Stocks;
         }
@@ -754,7 +754,7 @@ Body
        }
    ]
    ```
-## 申請建立 LINE Bot
+## 申請 LINE Bot
 1. 至 [LINE Developers](https://developers.line.biz/) 登入
 2. 在 Providers 頁面 新增 Provider
 3. 進入 Provider 頁面後，選取 Create a Messaging API channel
@@ -766,3 +766,93 @@ Body
    - 勾選 `I have read and agree to the LINE Official Account Terms of Use`
    - 勾選 `I have read and agree to the LINE Official Account API Terms of Use`
    - 點擊 `Create`
+5. 設定頻道
+   - 進入 `Messaging API` 頁籤
+   - 在 `Webhook settings` 區塊內的 `Webhook URL`，點擊 `Edit`，輸入從 ngrok 取得的網址（要加上配給 LINE Bot 的 EndPoint /LineBot）  
+     https://\<random\>.ngrok.io/LineBot
+   - 在 `Webhook settings` 區塊內的 `Use webhook`，切換為啟用
+   - 在 `LINE Official Account features` 區塊內的 `Allow bot to join group chats`，點擊 `Edit`，在彈出的 `帳號設定` 頁面
+     - 在 `聊天` 區塊內的 `加入群組或多人聊天室`，選取 `接受邀請加入群組或多人聊天室`
+   - 在 `LINE Official Account features` 區塊內的 `Auto-reply messages`，點擊 `Edit`，在彈出的 `回應設定` 頁面
+     - 在 `進階設定` 區塊內的 `自動回應訊息`，選取 `停用`
+## 加入 LINE Bot
+1. 進入 `Messaging API` 頁籤
+2. 在 `Bot information` 區塊內的 `QR code`，使用手機掃碼加入
+## 接收 LINE Bot 訊息
+### `Controllers\LineBotController.cs`
+``` csharp
+using System;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+
+namespace app.Controllers
+{
+    [ApiController]
+    [Route("[controller]")]
+    public class LineBotController : ControllerBase
+    {
+        private readonly ILogger<LineBotController> _logger;
+
+        public LineBotController(ILogger<LineBotController> logger)
+        {
+            _logger = logger;
+        }
+
+        [HttpPost]
+        public Object Post([FromBody] dynamic content)
+        {
+            Console.WriteLine($"LINE: {content}");
+            return new {};
+        }
+    }
+}
+```
+傳送訊息 Hi 給 LINE Bot
+``` shell
+LINE: {"events":[{"type":"message","replyToken":"b405a8055a2f47728e88479f42d3f625","source":{"userId":"Ud05919418fb37fec6635ec4de8338967","type":"user"},"timestamp":1606971149793,"mode":"active","message":{"type":"text","id":"13137028819991","text":"Hi"}}],"destination":"U858c9452b76d0726756fe8f1f5bfcc98"}
+```
+## 解析 LINE Bot 訊息
+### `Controllers\LineBotController.cs`
+``` csharp
+using System;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+
+namespace app.Controllers
+{
+    [ApiController]
+    [Route("[controller]")]
+    public class LineBotController : ControllerBase
+    {
+        private readonly ILogger<LineBotController> _logger;
+
+        public LineBotController(ILogger<LineBotController> logger)
+        {
+            _logger = logger;
+        }
+
+        [HttpPost]
+        public Object Post([FromBody] dynamic content)
+        {
+            Console.WriteLine($"LINE: {content}");
+            foreach (dynamic e in content.GetProperty("events").EnumerateArray())
+            {
+                if (e.GetProperty("type").ToString().Equals("message"))
+                {
+                    string text = e.GetProperty("message").GetProperty("text").ToString();
+                    Console.WriteLine($"      {text}");
+                }
+            }
+            return new {};
+        }
+    }
+}
+```
+傳送訊息 Hi 給 LINE Bot
+``` shell
+LINE: {"events":[{"type":"message","replyToken":"6ebe52ebb3924181890e6b81c0373205","source":{"userId":"Ud05919418fb37fec6635ec4de8338967","type":"user"},"timestamp":1606973509569,"mode":"active","message":{"type":"text","id":"13137194379751","text":"Hi"}}],"destination":"U858c9452b76d0726756fe8f1f5bfcc98"}
+      Hi
+```
+## 回應 LINE Bot 訊息
+參考 [Messaging API: Send a reply](
+https://developers.line.biz/en/reference/messaging-api/#send-reply-message)
