@@ -898,9 +898,13 @@ namespace app.Controllers
                     req.Headers["Authorization"] = "Bearer t5TwfaBQnhwqFnOpEI510zNnFjLmwMs6+hNGQuW4tHKuRvZREezBsu/y5oq/6HKSDg1js2769TUhpgzsO/SpAjKlQoMzHuWeG/icYmVaTO+NKWY5f2QCddBjSY8aNRN4pn9t8dTEJOL3e3METCwHYQdB04t89/1O/w1cDnyilFU=";
                     using (StreamWriter writer = new StreamWriter(req.GetRequestStream()))
                     {
-                        writer.WriteLine($"{{\"replyToken\":\"{token}\"}},\"messages\":[{{\"type\":\"text\",\"text\":\"test\"}}]");
+                        writer.WriteLine($"{{\"replyToken\":\"{token}\",\"messages\":[{{\"type\":\"text\",\"text\":\"test\"}}]}}");
                     }
                     HttpWebResponse rsp = req.GetResponse() as HttpWebResponse;
+                    using (StreamReader reader = new StreamReader(rsp.GetResponseStream()))
+                    {
+                        Console.WriteLine(reader.ReadToEnd());
+                    }
                 }
             }
             return new {};
