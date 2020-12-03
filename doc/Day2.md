@@ -863,6 +863,7 @@ https://developers.line.biz/en/reference/messaging-api/#send-reply-message)
 using System;
 using System.IO;
 using System.Net;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -898,7 +899,19 @@ namespace app.Controllers
                     req.Headers["Authorization"] = "Bearer t5TwfaBQnhwqFnOpEI510zNnFjLmwMs6+hNGQuW4tHKuRvZREezBsu/y5oq/6HKSDg1js2769TUhpgzsO/SpAjKlQoMzHuWeG/icYmVaTO+NKWY5f2QCddBjSY8aNRN4pn9t8dTEJOL3e3METCwHYQdB04t89/1O/w1cDnyilFU=";
                     using (StreamWriter writer = new StreamWriter(req.GetRequestStream()))
                     {
-                        writer.WriteLine($"{{\"replyToken\":\"{token}\",\"messages\":[{{\"type\":\"text\",\"text\":\"test\"}}]}}");
+                        var data = new
+                        {
+                            replyToken = token,
+                            messages = new []
+                            {
+                                new
+                                {
+                                    type = "text",
+                                    text = "test"
+                                }
+                            }
+                        };
+                        writer.WriteLine(JsonSerializer.Serialize(data));
                     }
                     HttpWebResponse rsp = req.GetResponse() as HttpWebResponse;
                     using (StreamReader reader = new StreamReader(rsp.GetResponseStream()))
