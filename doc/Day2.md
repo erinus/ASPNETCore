@@ -701,7 +701,53 @@ Body
    ```
 5. 執行
    ``` shell
-   > ./ngrok http 5001
+   > ./ngrok http 5000
+
+   ngrok by @inconshreveable
+
+   Session Status                online
+   Account                       erinus.startup@gmail.com (Plan: Free)
+   Version                       2.3.35
+   Region                        United States (us)
+   Web Interface                 http://127.0.0.1:4040
+   Forwarding                    http://2032f71a1524.ngrok.io -> http://localhost:5000
+   Forwarding                    https://2032f71a1524.ngrok.io -> http://localhost:5000
+
+   Connections                   ttl     opn     rt1     rt5     p50     p90
+                                 0       0       0.00    0.00    0.00    0.00
+   ```
+   > 如果出現錯誤訊息 `listen tcp 127.0.0.1:4040: bind: An attempt was made to access a socket in a way forbidden by its access permissions.`，請重新開機
+6. 開啟瀏覽器連線 https://2032f71a1524.ngrok.io/Stock 測試，取得 JSON 回應如下
+   ``` json
+   [
+       {
+           "id": 1,
+           "time": "2020-12-02T12:00:00Z",
+           "code": "2330",
+           "open": 490,
+           "high": 495,
+           "low": 489,
+           "close": 492
+       },
+       {
+           "id": 2,
+           "time": "2020-12-02T12:01:00Z",
+           "code": "2330",
+           "open": 492,
+           "high": 495,
+           "low": 489,
+           "close": 492
+       },
+       {
+           "id": 3,
+           "time": "2020-12-02T12:02:00Z",
+           "code": "2330",
+           "open": 492,
+           "high": 497,
+           "low": 491,
+           "close": 494
+       }
+   ]
    ```
 ## 申請建立 LINE Bot
 1. 至 [LINE Developers](https://developers.line.biz/) 登入
